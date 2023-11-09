@@ -22,13 +22,13 @@
 
 module uart_rx (
     input  logic        clk_i,
-    input  logic        rstn_i,
+    input  logic        rst_n_i,
     input  logic        rx_i,
-    input  logic [15:0] cfg_div_i,
+    output logic        busy_o,
     input  logic        cfg_en_i,
+    input  logic [15:0] cfg_div_i,
     input  logic        cfg_parity_en_i,
     input  logic [ 1:0] cfg_bits_i,
-    output logic        busy_o,
     output logic        err_o,
     input  logic        err_clr_i,
     output logic [ 7:0] rx_data_o,
@@ -57,8 +57,7 @@ module uart_rx (
 
   assign busy_o = (s_fsm_q != IDLE);
   always_comb begin
-    unique 
-    case (cfg_bits_i)
+    unique case (cfg_bits_i)
       2'b00: s_target_bits = 3'd4;
       2'b01: s_target_bits = 3'd5;
       2'b10: s_target_bits = 3'd6;
@@ -135,8 +134,8 @@ module uart_rx (
     endcase
   end
 
-  always_ff @(posedge clk_i or negedge rstn_i) begin
-    if (rstn_i == 1'b0) begin
+  always_ff @(posedge clk_i or negedge rst_n_i) begin
+    if (rst_n_i == 1'b0) begin
       s_fsm_q         <= IDLE;
       s_reg_data_q    <= 8'hFF;
       s_reg_bit_cnt_q <= 'h0;
@@ -152,16 +151,16 @@ module uart_rx (
   end
 
   assign s_rx_fall = ~reg_rx_sync[1] & reg_rx_sync[2];
-  always_ff @(posedge clk_i or negedge rstn_i) begin
-    if (rstn_i == 1'b0) reg_rx_sync <= 3'b111;
+  always_ff @(posedge clk_i or negedge rst_n_i) begin
+    if (rst_n_i == 1'b0) reg_rx_sync <= 3'b111;
     else begin
       if (cfg_en_i) reg_rx_sync <= {reg_rx_sync[1:0], rx_i};
       else reg_rx_sync <= 3'b111;
     end
   end
 
-  always_ff @(posedge clk_i or negedge rstn_i) begin
-    if (rstn_i == 1'b0) begin
+  always_ff @(posedge clk_i or negedge rst_n_i) begin
+    if (rst_n_i == 1'b0) begin
       s_baud_cnt <= 'h0;
       s_bit_done <= 1'b0;
     end else begin
@@ -183,8 +182,8 @@ module uart_rx (
     end
   end
 
-  always_ff @(posedge clk_i or negedge rstn_i) begin
-    if (rstn_i == 1'b0) begin
+  always_ff @(posedge clk_i or negedge rst_n_i) begin
+    if (rst_n_i == 1'b0) begin
       err_o <= 1'b0;
     end else begin
       if (err_clr_i) begin

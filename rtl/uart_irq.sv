@@ -69,7 +69,7 @@ module uart_irq #(
 
   dffr #(3) u_ip_dffr (
       clk_i,
-      rstn_i,
+      rst_n_i,
       s_ip_d,
       s_ip_q
   );
