@@ -21,60 +21,61 @@
 // See the Mulan PSL v2 for more details.
 
 module uart_irq #(
-    parameter FIFO_DEPTH = 16
+    parameter FIFO_DEPTH     = 16,
+    parameter LOG_FIFO_DEPTH = $clog2(FIFO_DEPTH)
+
 ) (
-    input  logic                        clk_i,
-    input  logic                        rst_n_i,
-    input  logic [                 2:0] irq_en_i,
-    input  logic                        thre_i,
-    input  logic                        cti_i,
-    input  logic                        pe_i,
-    input  logic [$clog2(FIFO_DEPTH):0] rx_elem_i,
-    input  logic [$clog2(FIFO_DEPTH):0] tx_elem_i,
-    input  logic [                 1:0] trg_level_i,
-    input  logic [                 1:0] clr_int_i,
-    output logic [                 1:0] iir_o,
-    output logic                        irq_o
+    input  logic                    clk_i,
+    input  logic                    rst_n_i,
+    input  logic                    clr_int_i,
+    input  logic [             2:0] irq_en_i,
+    input  logic                    thre_i,
+    input  logic                    cti_i,
+    input  logic                    pe_i,
+    input  logic [LOG_FIFO_DEPTH:0] rx_elem_i,
+    input  logic [LOG_FIFO_DEPTH:0] tx_elem_i,
+    input  logic [             1:0] trg_level_i,
+    output logic [             2:0] ip_o,
+    output logic                    irq_o
 );
 
-  logic [1:0] s_iir_n, s_iir_q;
+  logic [2:0] s_ip_d, s_ip_q;
   logic s_trg_level_done;
 
   always_comb begin
     s_trg_level_done = 1'b0;
     unique case (trg_level_i)
-      2'b00: if ($unsigned(rx_elem_i) == 1) s_trg_level_done = 1'b1;
-      2'b01: if ($unsigned(rx_elem_i) == 4) s_trg_level_done = 1'b1;
-      2'b10: if ($unsigned(rx_elem_i) == 8) s_trg_level_done = 1'b1;
-      2'b11: if ($unsigned(rx_elem_i) == 14) s_trg_level_done = 1'b1;
+      2'b00: if (rx_elem_i == 4'd1) s_trg_level_done = 1'b1;
+      2'b01: if (rx_elem_i == 4'd2) s_trg_level_done = 1'b1;
+      2'b10: if (rx_elem_i == 4'd8) s_trg_level_done = 1'b1;
+      2'b11: if (rx_elem_i == 4'd14) s_trg_level_done = 1'b1;
     endcase
   end
 
   always_comb begin
-    if (clr_int_i == 2'b0) s_iir_n = s_iir_q;
-    else s_iir_n = s_iir_q & ~(clr_int_i);
-
-    if (irq_en_i[2] & pe_i) begin
-      s_iir_n = 2'b00;
+    s_ip_d = s_ip_q;
+    if (clr_int_i) begin
+      s_ip_d = 3'b000;
+    end else if (irq_en_i[2] & pe_i) begin
+      s_ip_d = 3'b100;
     end else if (irq_en_i[0] & (s_trg_level_done | thre_i)) begin
-      s_iir_n = 2'b01;
+      s_ip_d = 3'b001;
     end else if (irq_en_i[0] & cti_i) begin
-      s_iir_n = 2'b01;
+      s_ip_d = 3'b001;
     end else if (irq_en_i[1] & tx_elem_i == 0) begin
-      s_iir_n = 2'b11;
+      s_ip_d = 3'b010;
     end
   end
 
-  always_ff @(posedge clk_i, negedge rst_n_i) begin
-    if (~rst_n_i) begin
-      s_iir_q <= 2'b00;
-    end else begin
-      s_iir_q <= s_iir_n;
-    end
-  end
+  dffr #(3) u_ip_dffr (
+      clk_i,
+      rstn_i,
+      s_ip_d,
+      s_ip_q
+  );
 
-  assign iir_o = s_iir_q;
-  assign irq_o = s_iir_q != 2'b00;
+  assign ip_o  = s_ip_q;
+  assign irq_o = s_ip_q != 3'b000;
 
 endmodule
 
