@@ -26,7 +26,7 @@ module uart_tx (
     output logic        tx_o,
     output logic        busy_o,
     input  logic        cfg_en_i,
-    input  logic [15:0] cfg_div_i,
+    input  logic [15:0] cfg_div_i,        // NOTE: no parameterization
     input  logic        cfg_parity_en_i,
     input  logic [ 1:0] cfg_bits_i,
     input  logic        cfg_stop_bits_i,
@@ -51,7 +51,7 @@ module uart_tx (
   logic [2:0] s_target_bits;
   logic s_parity_bit_d, s_parity_bit_q;
   logic s_sample_data, s_baudgen_en, s_bit_done;
-  logic [15:0] baud_cnt;
+  logic [15:0] baud_cnt;  // NOTE: no parameterization
 
   assign busy_o = (s_fsm_q != IDLE);
   always_comb begin

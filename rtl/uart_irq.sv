@@ -45,10 +45,11 @@ module uart_irq #(
   always_comb begin
     s_trg_level_done = 1'b0;
     unique case (trg_level_i)
-      2'b00: if (rx_elem_i == 4'd1) s_trg_level_done = 1'b1;
-      2'b01: if (rx_elem_i == 4'd2) s_trg_level_done = 1'b1;
-      2'b10: if (rx_elem_i == 4'd8) s_trg_level_done = 1'b1;
-      2'b11: if (rx_elem_i == 4'd14) s_trg_level_done = 1'b1;
+      2'b00:   if (rx_elem_i == 4'd1) s_trg_level_done = 1'b1;
+      2'b01:   if (rx_elem_i == 4'd2) s_trg_level_done = 1'b1;
+      2'b10:   if (rx_elem_i == 4'd8) s_trg_level_done = 1'b1;
+      2'b11:   if (rx_elem_i == 4'd14) s_trg_level_done = 1'b1;
+      default: s_trg_level_done = 1'b0;
     endcase
   end
 
@@ -58,12 +59,12 @@ module uart_irq #(
       s_ip_d = 3'b000;
     end else if (irq_en_i[2] & pe_i) begin
       s_ip_d = 3'b100;
+    end else if (irq_en_i[1] & tx_elem_i == 0) begin
+      s_ip_d = 3'b010;
     end else if (irq_en_i[0] & (s_trg_level_done | thre_i)) begin
       s_ip_d = 3'b001;
     end else if (irq_en_i[0] & cti_i) begin
       s_ip_d = 3'b001;
-    end else if (irq_en_i[1] & tx_elem_i == 0) begin
-      s_ip_d = 3'b010;
     end
   end
 
