@@ -18,6 +18,7 @@ SRC_FILE += ../rtl/uart_tx.sv
 SRC_FILE += ../rtl/uart_rx.sv
 SRC_FILE += ../rtl/uart_irq.sv
 SRC_FILE += ../rtl/apb4_uart.sv
+SRC_FILE += ../model/rs232.sv
 SRC_FILE += ../tb/uart_test.sv
 SRC_FILE += ../tb/test_top.sv
 SRC_FILE += ../tb/apb4_uart_tb.sv
