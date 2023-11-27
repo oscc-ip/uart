@@ -37,8 +37,10 @@ program automatic test_top (
     uart_hdl.init();
     uart_hdl.test_reset_reg();
     uart_hdl.test_wr_rd_reg();
+    uart_hdl.test_send();
     uart_hdl.test_irq();
-
+    #16741626;
+    uart_hdl.test_recv();
     Helper::end_banner();
     #20000 $finish;
   end

@@ -14,6 +14,7 @@
 module apb4_uart_tb ();
   localparam CLK_PEROID = 10;
   logic rst_n_i, clk_i;
+  bit [7:0] wr_val;
 
   initial begin
     clk_i = 1'b0;
@@ -30,6 +31,15 @@ module apb4_uart_tb ();
 
   initial begin
     sim_reset(40);
+    #16741626;
+    while (1) begin
+      wr_val = 8'h41;  // 0100_0011 -> 1100_0010
+      for (int i = 0; i < 10; i++) begin
+        u_rs232.send(wr_val + i);
+      end
+    end
+    #16741626;
+    $finish;
   end
 
   apb4_if u_apb4_if (
@@ -43,6 +53,11 @@ module apb4_uart_tb ();
   apb4_uart u_apb4_uart (
       .apb4(u_apb4_if.slave),
       .uart(u_uart_if.dut)
+  );
+
+  rs232 #(115200, 0) u_rs232 (
+      .rs232_rx_i(u_uart_if.uart_tx_o),
+      .rs232_tx_o(u_uart_if.uart_rx_i)
   );
 
 endmodule
