@@ -25,7 +25,8 @@
 `include "uart_define.sv"
 
 module apb4_uart #(
-    parameter int FIFO_DEPTH     = 16,
+    // parameter int FIFO_DEPTH     = 16,
+    parameter int FIFO_DEPTH     = 64,
     parameter int LOG_FIFO_DEPTH = $clog2(FIFO_DEPTH)
 ) (
     apb4_if.slave apb4,
@@ -35,7 +36,6 @@ module apb4_uart #(
   logic [3:0] s_apb4_addr;
   logic [`UART_LCR_WIDTH-1:0] s_uart_lcr_d, s_uart_lcr_q;
   logic [`UART_DIV_WIDTH-1:0] s_uart_div_d, s_uart_div_q;
-  logic [`UART_TRX_WIDTH-1:0] s_uart_trx_d, s_uart_trx_q;
   logic [`UART_FCR_WIDTH-1:0] s_uart_fcr_d, s_uart_fcr_q;
   logic [`UART_LSR_WIDTH-1:0] s_uart_lsr_d, s_uart_lsr_q;
   logic s_clr_int, s_parity_err;
@@ -61,7 +61,7 @@ module apb4_uart #(
   );
 
   assign s_uart_div_d = (s_apb4_wr_hdshk && s_apb4_addr == `UART_DIV) ? apb4.pwdata[`UART_DIV_WIDTH-1:0] : s_uart_div_q;
-  dffr #(`UART_DIV_WIDTH) u_uart_div_dffr (
+  dffrc #(`UART_DIV_WIDTH, `UART_DIV_MIN_VAL) u_uart_div_dffrc (
       apb4.pclk,
       apb4.presetn,
       s_uart_div_d,
@@ -85,7 +85,6 @@ module apb4_uart #(
   );
 
   always_comb begin
-    s_uart_lsr_d      = s_uart_lsr_q;
     s_uart_lsr_d[2:0] = s_lsr_ip;
     s_uart_lsr_d[3]   = ~s_rx_pop_valid;
     s_uart_lsr_d[4]   = s_rx_pop_data[8];

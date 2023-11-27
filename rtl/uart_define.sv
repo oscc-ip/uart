@@ -58,7 +58,7 @@
 `define UART_FCR_WIDTH 4
 `define UART_LSR_WIDTH 7
 
-`define UART_PSCR_MIN_VAL  {{(`UART_PSCR_WIDTH-2){1'b0}}, 2'd2}
+`define UART_DIV_MIN_VAL  {{(`UART_DIV_WIDTH-2){1'b0}}, 2'd2}
 `define UART_LSR_RESET_VAL 7'h60
 // verilog_format: on
 
