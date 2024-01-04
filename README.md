@@ -10,6 +10,7 @@
 * Fully programmable serial configuration
     * 5, 6, 7 or 8 bits data word length
     * 0 or 1 stop bits
+    * odd, even, one or zero parity
 * Independent send and receive fifo
     * 16~64 data depth
     * empty or no-emtpy status flag
