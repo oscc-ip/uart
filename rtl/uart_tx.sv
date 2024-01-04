@@ -26,8 +26,9 @@ module uart_tx (
     output logic        tx_o,
     output logic        busy_o,
     input  logic        cfg_en_i,
-    input  logic [15:0] cfg_div_i,        // NOTE: no parameterization
+    input  logic [15:0] cfg_div_i,         // NOTE: no parameterization
     input  logic        cfg_parity_en_i,
+    input  logic [ 1:0] cfg_parity_sel_i,
     input  logic [ 1:0] cfg_bits_i,
     input  logic        cfg_stop_bits_i,
     input  logic [ 7:0] tx_data_i,
@@ -106,7 +107,13 @@ module uart_tx (
         end
       end
       PARITY: begin
-        tx_o         = s_parity_bit_q;
+        unique case (cfg_parity_sel_i)
+          2'b00: tx_o = ~s_parity_bit_q;
+          2'b01: tx_o = s_parity_bit_q;
+          2'b10: tx_o = 1'b0;
+          2'b11: tx_o = 1'b1;
+        endcase
+
         s_baudgen_en = 1'b1;
         if (s_bit_done) s_fsm_d = STOP_BIT_FIRST;
       end

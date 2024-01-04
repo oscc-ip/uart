@@ -28,6 +28,7 @@ module uart_rx (
     input  logic        cfg_en_i,
     input  logic [15:0] cfg_div_i,
     input  logic        cfg_parity_en_i,
+    input  logic [ 1:0] cfg_parity_sel_i,
     input  logic [ 1:0] cfg_bits_i,
     output logic        err_o,
     input  logic        err_clr_i,
@@ -120,7 +121,12 @@ module uart_rx (
       PARITY: begin
         s_baudgen_en = 1'b1;
         if (s_bit_done) begin
-          if (s_parity_bit_q != reg_rx_sync[2]) s_set_error = 1'b1;
+          unique case (cfg_parity_sel_i)
+            2'b00: if (reg_rx_sync[2] != ~s_parity_bit_q) s_set_error = 1'b1;
+            2'b01: if (reg_rx_sync[2] != s_parity_bit_q) s_set_error = 1'b1;
+            2'b10: if (reg_rx_sync[2] != 1'b0) s_set_error = 1'b1;
+            2'b11: if (reg_rx_sync[2] != 1'b1) s_set_error = 1'b1;
+          endcase
           s_fsm_d = STOP_BIT;
         end
       end

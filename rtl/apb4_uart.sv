@@ -25,7 +25,6 @@
 `include "uart_define.sv"
 
 module apb4_uart #(
-    // parameter int FIFO_DEPTH     = 16,
     parameter int FIFO_DEPTH     = 64,
     parameter int LOG_FIFO_DEPTH = $clog2(FIFO_DEPTH)
 ) (
@@ -34,10 +33,16 @@ module apb4_uart #(
 );
 
   logic [3:0] s_apb4_addr;
+  logic s_apb4_wr_hdshk, s_apb4_rd_hdshk;
   logic [`UART_LCR_WIDTH-1:0] s_uart_lcr_d, s_uart_lcr_q;
+  logic s_uart_lcr_en;
   logic [`UART_DIV_WIDTH-1:0] s_uart_div_d, s_uart_div_q;
+  logic s_uart_div_en;
   logic [`UART_FCR_WIDTH-1:0] s_uart_fcr_d, s_uart_fcr_q;
+  logic s_uart_fcr_en;
   logic [`UART_LSR_WIDTH-1:0] s_uart_lsr_d, s_uart_lsr_q;
+  logic s_bit_stb, s_bit_pen, s_bit_rf_clr, s_bit_tf_clr;
+  logic [1:0] s_bit_wls, s_bit_ps, s_bit_rx_trg_levl;
   logic s_clr_int, s_parity_err;
   logic s_tx_push_valid, s_tx_push_ready, s_tx_pop_valid, s_tx_pop_ready;
   logic s_rx_pop_valid, s_rx_pop_ready;
@@ -46,24 +51,37 @@ module apb4_uart #(
   logic [8:0] s_rx_pop_data;
   logic [LOG_FIFO_DEPTH:0] s_tx_elem, s_rx_elem;
 
-  assign s_apb4_addr = apb4.paddr[5:2];
-  assign s_apb4_wr_hdshk = apb4.psel && apb4.penable && apb4.pwrite;
-  assign s_apb4_rd_hdshk = apb4.psel && apb4.penable && (~apb4.pwrite);
-  assign apb4.pready = 1'b1;
-  assign apb4.pslverr = 1'b0;
+  assign s_apb4_addr       = apb4.paddr[5:2];
+  assign s_apb4_wr_hdshk   = apb4.psel && apb4.penable && apb4.pwrite;
+  assign s_apb4_rd_hdshk   = apb4.psel && apb4.penable && (~apb4.pwrite);
+  assign apb4.pready       = 1'b1;
+  assign apb4.pslverr      = 1'b0;
 
-  assign s_uart_lcr_d = (s_apb4_wr_hdshk && s_apb4_addr == `UART_LCR) ? apb4.pwdata[`UART_LCR_WIDTH-1:0] : s_uart_lcr_q;
-  dffr #(`UART_LCR_WIDTH) u_uart_lcr_dffr (
+  assign s_bit_wls         = s_uart_lcr_q[4:3];
+  assign s_bit_stb         = s_uart_lcr_q[5];
+  assign s_bit_pen         = s_uart_lcr_q[6];
+  assign s_bit_ps          = s_uart_lcr_q[8:7];
+
+  assign s_bit_rf_clr      = s_uart_fcr_q[0];
+  assign s_bit_tf_clr      = s_uart_fcr_q[1];
+  assign s_bit_rx_trg_levl = s_uart_fcr_q[3:2];
+
+  assign s_uart_lcr_en     = s_apb4_wr_hdshk && s_apb4_addr == `UART_LCR;
+  assign s_uart_lcr_d      = s_uart_lcr_en ? apb4.pwdata[`UART_LCR_WIDTH-1:0] : s_uart_lcr_q;
+  dffer #(`UART_LCR_WIDTH) u_uart_lcr_dffer (
       apb4.pclk,
       apb4.presetn,
+      s_uart_lcr_en,
       s_uart_lcr_d,
       s_uart_lcr_q
   );
 
-  assign s_uart_div_d = (s_apb4_wr_hdshk && s_apb4_addr == `UART_DIV) ? apb4.pwdata[`UART_DIV_WIDTH-1:0] : s_uart_div_q;
-  dffrc #(`UART_DIV_WIDTH, `UART_DIV_MIN_VAL) u_uart_div_dffrc (
+  assign s_uart_div_en = s_apb4_wr_hdshk && s_apb4_addr == `UART_DIV;
+  assign s_uart_div_d  = s_uart_div_en ? apb4.pwdata[`UART_DIV_WIDTH-1:0] : s_uart_div_q;
+  dfferc #(`UART_DIV_WIDTH, `UART_DIV_MIN_VAL) u_uart_div_dfferc (
       apb4.pclk,
       apb4.presetn,
+      s_uart_div_en,
       s_uart_div_d,
       s_uart_div_q
   );
@@ -76,10 +94,12 @@ module apb4_uart #(
     end
   end
 
-  assign s_uart_fcr_d = (s_apb4_wr_hdshk && s_apb4_addr == `UART_FCR) ? apb4.pwdata[`UART_FCR_WIDTH-1:0] : s_uart_fcr_q;
-  dffr #(`UART_FCR_WIDTH) u_uart_fcr_dffr (
+  assign s_uart_fcr_en = s_apb4_wr_hdshk && s_apb4_addr == `UART_FCR;
+  assign s_uart_fcr_d  = s_uart_fcr_en ? apb4.pwdata[`UART_FCR_WIDTH-1:0] : s_uart_fcr_q;
+  dffer #(`UART_FCR_WIDTH) u_uart_fcr_dffer (
       apb4.pclk,
       apb4.presetn,
+      s_uart_fcr_en,
       s_uart_fcr_d,
       s_uart_fcr_q
   );
@@ -125,7 +145,7 @@ module apb4_uart #(
   ) u_tx_fifo (
       .clk_i  (apb4.pclk),
       .rst_n_i(apb4.presetn),
-      .flush_i(s_uart_fcr_q[1]),
+      .flush_i(s_bit_tf_clr),
       .cnt_o  (s_tx_elem),
       .push_i (s_tx_push_valid),
       .full_o (),
@@ -136,18 +156,19 @@ module apb4_uart #(
   );
 
   uart_tx u_uart_tx (
-      .clk_i          (apb4.pclk),
-      .rst_n_i        (apb4.presetn),
-      .tx_o           (uart.uart_tx_o),
-      .busy_o         (),
-      .cfg_en_i       (1'b1),
-      .cfg_div_i      (s_uart_div_q[`UART_DIV_WIDTH-1:0]),
-      .cfg_parity_en_i(s_uart_lcr_q[6]),
-      .cfg_bits_i     (s_uart_lcr_q[4:3]),
-      .cfg_stop_bits_i(s_uart_lcr_q[5]),
-      .tx_data_i      (s_tx_pop_data),
-      .tx_valid_i     (~s_tx_pop_valid),
-      .tx_ready_o     (s_tx_pop_ready)
+      .clk_i           (apb4.pclk),
+      .rst_n_i         (apb4.presetn),
+      .tx_o            (uart.uart_tx_o),
+      .busy_o          (),
+      .cfg_en_i        (1'b1),
+      .cfg_div_i       (s_uart_div_q[`UART_DIV_WIDTH-1:0]),
+      .cfg_parity_en_i (s_bit_pen),
+      .cfg_parity_sel_i(s_bit_ps),
+      .cfg_bits_i      (s_bit_wls),
+      .cfg_stop_bits_i (s_bit_stb),
+      .tx_data_i       (s_tx_pop_data),
+      .tx_valid_i      (~s_tx_pop_valid),
+      .tx_ready_o      (s_tx_pop_ready)
   );
 
   fifo #(
@@ -156,7 +177,7 @@ module apb4_uart #(
   ) u_rx_fifo (
       .clk_i  (apb4.pclk),
       .rst_n_i(apb4.presetn),
-      .flush_i(s_uart_fcr_q[0]),
+      .flush_i(s_bit_rf_clr),
       .cnt_o  (s_rx_elem),
       .push_i (s_rx_push_valid),
       .full_o (s_rx_push_ready),
@@ -167,19 +188,20 @@ module apb4_uart #(
   );
 
   uart_rx u_uart_rx (
-      .clk_i          (apb4.pclk),
-      .rst_n_i        (apb4.presetn),
-      .rx_i           (uart.uart_rx_i),
-      .busy_o         (),
-      .cfg_en_i       (1'b1),
-      .cfg_div_i      (s_uart_div_q[`UART_DIV_WIDTH-1:0]),
-      .cfg_parity_en_i(s_uart_lcr_q[6]),
-      .cfg_bits_i     (s_uart_lcr_q[4:3]),
-      .err_o          (s_parity_err),
-      .err_clr_i      (1'b1),
-      .rx_data_o      (s_rx_push_data),
-      .rx_valid_o     (s_rx_push_valid),
-      .rx_ready_i     (~s_rx_push_ready)
+      .clk_i           (apb4.pclk),
+      .rst_n_i         (apb4.presetn),
+      .rx_i            (uart.uart_rx_i),
+      .busy_o          (),
+      .cfg_en_i        (1'b1),
+      .cfg_div_i       (s_uart_div_q[`UART_DIV_WIDTH-1:0]),
+      .cfg_parity_en_i (s_bit_pen),
+      .cfg_parity_sel_i(s_bit_ps),
+      .cfg_bits_i      (s_bit_wls),
+      .err_o           (s_parity_err),
+      .err_clr_i       (1'b1),
+      .rx_data_o       (s_rx_push_data),
+      .rx_valid_o      (s_rx_push_valid),
+      .rx_ready_i      (~s_rx_push_ready)
   );
 
   uart_irq #(
@@ -194,7 +216,7 @@ module apb4_uart #(
       .pe_i       (s_uart_lsr_q[4]),
       .rx_elem_i  (s_rx_elem),
       .tx_elem_i  (s_tx_elem),
-      .trg_level_i(s_uart_fcr_q[3:2]),
+      .trg_level_i(s_bit_rx_trg_levl),
       .ip_o       (s_lsr_ip),
       .irq_o      (uart.irq_o)
   );
