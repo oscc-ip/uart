@@ -2,6 +2,7 @@
 
 ## Features
 * Single wire half duplex mode
+* Compatibility with NS16550
 * Programmable prescaler
     * max division factor is up to 2^16
     * can be changed ongoing
