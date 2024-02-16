@@ -45,7 +45,7 @@ module apb4_uart #(
   logic [1:0] s_bit_wls, s_bit_ps, s_bit_rx_trg_levl;
   logic s_clr_int, s_parity_err;
   logic s_tx_push_valid, s_tx_push_ready, s_tx_pop_valid, s_tx_pop_ready;
-  logic s_rx_pop_valid, s_rx_pop_ready;
+  logic s_rx_pop_valid, s_rx_pop_ready; // NOTE: need to define variables
   logic [2:0] s_lsr_ip;
   logic [7:0] s_tx_push_data, s_tx_pop_data, s_rx_push_data;
   logic [8:0] s_rx_pop_data;
