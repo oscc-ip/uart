@@ -67,16 +67,15 @@ module uart_rx (
   end
 
   always_comb begin
-    s_fsm_d         = s_fsm_q;
     s_sample_data   = 1'b0;
-    s_reg_bit_cnt_d = s_reg_bit_cnt_q;
-    s_reg_data_d    = s_reg_data_q;
     rx_valid_o      = 1'b0;
     s_baudgen_en    = 1'b0;
     s_start_bit     = 1'b0;
-    s_parity_bit_d  = s_parity_bit_q;
     s_set_error     = 1'b0;
-
+    s_fsm_d         = s_fsm_q;
+    s_parity_bit_d  = s_parity_bit_q;
+    s_reg_bit_cnt_d = s_reg_bit_cnt_q;
+    s_reg_data_d    = s_reg_data_q;
     unique case (s_fsm_q)
       IDLE: begin
         if (s_rx_fall) begin
@@ -141,14 +140,19 @@ module uart_rx (
   end
 
   always_ff @(posedge clk_i or negedge rst_n_i) begin
-    if (rst_n_i == 1'b0) begin
+    if (~rst_n_i) begin
       s_fsm_q         <= IDLE;
       s_reg_data_q    <= 8'hFF;
       s_reg_bit_cnt_q <= 'h0;
       s_parity_bit_q  <= 1'b0;
     end else begin
-      if (s_bit_done) s_parity_bit_q <= s_parity_bit_d;
-      if (s_sample_data) s_reg_data_q <= s_reg_data_d;
+      if (s_bit_done) begin
+        s_parity_bit_q <= s_parity_bit_d;
+      end
+
+      if (s_sample_data) begin
+        s_reg_data_q <= s_reg_data_d;
+      end
 
       s_reg_bit_cnt_q <= s_reg_bit_cnt_d;
       if (cfg_en_i) s_fsm_q <= s_fsm_d;
@@ -158,7 +162,7 @@ module uart_rx (
 
   assign s_rx_fall = ~reg_rx_sync[1] & reg_rx_sync[2];
   always_ff @(posedge clk_i or negedge rst_n_i) begin
-    if (rst_n_i == 1'b0) reg_rx_sync <= 3'b111;
+    if (~rst_n_i) reg_rx_sync <= 3'b111;
     else begin
       if (cfg_en_i) reg_rx_sync <= {reg_rx_sync[1:0], rx_i};
       else reg_rx_sync <= 3'b111;
@@ -166,7 +170,7 @@ module uart_rx (
   end
 
   always_ff @(posedge clk_i or negedge rst_n_i) begin
-    if (rst_n_i == 1'b0) begin
+    if (~rst_n_i) begin
       s_baud_cnt <= 'h0;
       s_bit_done <= 1'b0;
     end else begin
@@ -189,7 +193,7 @@ module uart_rx (
   end
 
   always_ff @(posedge clk_i or negedge rst_n_i) begin
-    if (rst_n_i == 1'b0) begin
+    if (~rst_n_i) begin
       err_o <= 1'b0;
     end else begin
       if (err_clr_i) begin

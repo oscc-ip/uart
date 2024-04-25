@@ -65,14 +65,14 @@ module uart_tx (
   end
 
   always_comb begin
-    s_fsm_d         = s_fsm_q;
     tx_o            = 1'b1;
     s_sample_data   = 1'b0;
-    s_reg_bit_cnt_d = s_reg_bit_cnt_q;
-    s_reg_data_d    = {1'b1, s_reg_data_q[7:1]};
     tx_ready_o      = 1'b0;
     s_baudgen_en    = 1'b0;
+    s_fsm_d         = s_fsm_q;
     s_parity_bit_d  = s_parity_bit_q;
+    s_reg_bit_cnt_d = s_reg_bit_cnt_q;
+    s_reg_data_d    = {1'b1, s_reg_data_q[7:1]};
     unique case (s_fsm_q)
       IDLE: begin
         if (cfg_en_i) tx_ready_o = 1'b1;

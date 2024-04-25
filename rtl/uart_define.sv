@@ -13,36 +13,36 @@
 
 /* register mapping
  * UART_LCR:
- * BITS:   | 31:9 | 8:7  | 6   | 5   | 4:3 | 2    | 1    | 0    |
- * FIELDS: | RES  | PS   | PEN | STB | WLS | PEIE | TXIE | RXIE |
- * PERMS:  | NONE | RW   | RW  | RW  | RW  | RW   | RW   | RW   |
- * --------------------------------------------------------------
+ * BITS:   | 31:9 | 8:7 | 6   | 5   | 4:3 | 2    | 1    | 0    |
+ * FIELDS: | RES  | PS  | PEN | STB | WLS | PEIE | TXIE | RXIE |
+ * PERMS:  | NONE | RW  | RW  | RW  | RW  | RW   | RW   | RW   |
+ * -------------------------------------------------------------
  * UART_DIV:
  * BITS:   | 31:16 | 15:0 |
  * FIELDS: | RES   | DIV  |
  * PERMS:  | NONE  | RW   |
- * --------------------------------------------------------------
+ * -------------------------------------------------------------
  * UART_TRX:
  * BITS:   | 31:8 | 7:0 || BITS:   | 31:8 | 7:0 |
  * FIELDS: | RES  | RX  || FIELDS: | RES  | TX  |
- * PERMS:  | NONE | R   || PERMS:  | NONE | W   |
-  * -------------------------------------------------------------
+ * PERMS:  | NONE | RO  || PERMS:  | NONE | WO  |
+  * ------------------------------------------------------------
  * UART_FCR:
- * BITS:   | 31:4  | 3:2         | 1      | 0      |
- * FIELDS: | RES   | RX_TRG_LEVL | TF_CLR | RF_CLR |
- * PERMS:  | NONE  | W           | W      | W      |
- * --------------------------------------------------------------
+ * BITS:   | 31:4 | 3:2         | 1      | 0      |
+ * FIELDS: | RES  | RX_TRG_LEVL | TF_CLR | RF_CLR |
+ * PERMS:  | NONE | WO          | WO     | WO     |
+ * -------------------------------------------------------------
  * UART_LSR:
- * BITS:   | 31:7  | 6    | 5    | 4  | 3  | 2    | 1    | 0    |
- * FIELDS: | RES   | TEMT | THRE | PE | DR | PEIP | TXIP | RXIP |
- * PERMS:  | NONE  | R    | R    | R  | R  | R    | R    | R    |
- * --------------------------------------------------------------
+ * BITS:   | 31:7 | 6    | 5    | 4  | 3  | 2    | 1    | 0    |
+ * FIELDS: | RES  | TEMT | THRE | PE | DR | PEIP | TXIP | RXIP |
+ * PERMS:  | NONE | RO   | RO   | RO | RO | RO   | RO   | RO   |
+ * -------------------------------------------------------------
 */
 
 // verilog_format: off
 `define UART_LCR 4'b0000 // BASEADDR + 0x00
-`define UART_DIV 4'b0001 // BASEADDR + 0x08
-`define UART_TRX 4'b0010 // BASEADDR + 0x04
+`define UART_DIV 4'b0001 // BASEADDR + 0x04
+`define UART_TRX 4'b0010 // BASEADDR + 0x08
 `define UART_FCR 4'b0011 // BASEADDR + 0x0C
 `define UART_LSR 4'b0100 // BASEADDR + 0x10
 
