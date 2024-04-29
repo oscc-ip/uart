@@ -1,7 +1,7 @@
 ## Datasheet
 
 ### Overview
-The `uart()` IP is a fully parameterised soft IP recording the SoC architecture and ASIC backend informations. The IP features an APB4 slave interface, fully compliant with the AMBA APB Protocol Specification v2.0.
+The `uart(universal asynchronous receiver transmitter)` IP is a fully parameterised soft IP to implement one of the most common asynchronous protocols. The IP features an APB4 slave interface, fully compliant with the AMBA APB Protocol Specification v2.0.
 
 ### Feature
 * Single wire half duplex mode
@@ -41,8 +41,8 @@ The `uart()` IP is a fully parameterised soft IP recording the SoC architecture 
 | [LCR](#line-control-register) | 0x0 | 4 | line control register |
 | [DIV](#divide-reigster) | 0x4 | 4 | divide register |
 | [TRX](#transmit-receive-reigster) | 0x8 | 4 | transmit receive register |
-| [FCR](#fifo-control-reigster) | 0x10 | 4 | fifo control register |
-| [LSR](#line-state-reigster) | 0x14 | 4 | line state register |
+| [FCR](#fifo-control-reigster) | 0x0C | 4 | fifo control register |
+| [LSR](#line-state-reigster) | 0x10 | 4 | line state register |
 
 #### Line Control Register
 | bit | access  | description |
@@ -108,7 +108,7 @@ reset value: `0x0000_0002`
 
 reset value: `0x0000_0000`
 
-* TRX: transmit and receive shadow value
+* TRX: transmit and receive shadow register
 
 #### FIFO Control Reigster
 | bit | access  | description |
@@ -122,9 +122,9 @@ reset value: `0x0000_0000`
 
 * RX_TRG_LEVL: receive trigger threshold
     * `RX_TRG_LEVL = 2'b00`: 1 receive fifo element threshold
-    * `RX_TRG_LEVL = 2'b01`: 2 receive fifo element threshold
-    * `RX_TRG_LEVL = 2'b10`: 8 receive fifo element threshold
-    * `RX_TRG_LEVL = 2'b11`: 14 receive fifo element threshold
+    * `RX_TRG_LEVL = 2'b01`: 2 receive fifo elements threshold
+    * `RX_TRG_LEVL = 2'b10`: 8 receive fifo elements threshold
+    * `RX_TRG_LEVL = 2'b11`: 14 receive fifo elements threshold
 
 * TF_CLR: transmit fifo clear
     * `TF_CLR = 1'b0`: transmit fifo writable
@@ -137,7 +137,9 @@ reset value: `0x0000_0000`
 #### Line State Reigster
 | bit | access  | description |
 |:---:|:-------:| :---------: |
-| `[31:7]` | none | reserved |
+| `[31:9]` | none | reserved |
+| `[8:8]` | RO | FULL |
+| `[7:7]` | RO | EMPT |
 | `[6:6]` | RO | TEMT |
 | `[5:5]` | RO | THRE |
 | `[4:4]` | RO | PE |
@@ -146,12 +148,22 @@ reset value: `0x0000_0000`
 | `[1:1]` | RO | TXIP |
 | `[0:0]` | RO | RXIP |
 
-reset value: `0x0000_0060`
+reset value: `0x0000_00E0`
 
-* TEMT: xxx
+* FULL: transmit fifo full
+    * `FULL = 1'b0`: transmit fifo is no full
+    * `FULL = 1'b1`: otherwise
+
+* EMPT: receive fifo empty
+    * `EMPT = 1'b0`: receive fifo is no empty
+    * `EMPT = 1'b1`: otherwise
+
+* TEMT: transimtter fifo empty with tx ready 
+    * `TEMT = 1'b0`: transmit fifo is no empty
+    * `TEMT = 1'b1`: otherwise
 
 * THRE: transimtter holding register empty
-    * `THRE = 1'b0`: transmit fifo is empty
+    * `THRE = 1'b0`: transmit fifo is no empty
     * `THRE = 1'b1`: otherwise
 
 * PE: parity error
@@ -159,7 +171,7 @@ reset value: `0x0000_0060`
     * `PE = 1'b1`: otherwise
 
 * DR: data ready
-    * `DR = 1'b0`: no data in fifo
+    * `DR = 1'b0`: no data in recieve fifo
     * `DR = 1'b1`: otherwise
 
 * PEIP: parity error interrupt flag
@@ -175,20 +187,29 @@ reset value: `0x0000_0060`
     * `RXIP = 1'b1`: otherwise
 
 ### Program Guide
-The software operation of `uart` is simple. These registers can be accessed by 4-byte aligned read and write. C-like pseudocode read operation:
-```c
-uint32_t val;
-val = uart.SYS // read the sys register
-val = uart.IDL // read the idl register
-val = uart.IDH // read the idh register
+The software operation of `uart` is simple. These registers can be accessed by 4-byte aligned read and write. C-like pseudocode init operation:
 
+```c
+uart.LCR = 0
+uart.DIV = BAUD_DIV_16_bit     // set baud -> BAUD_DIV_16_bit = 100 x 10^6 / BAUD_VAL - 1
+uart.FCR.[TF_CLR, RF_CLR] = 1; // clear tx/rx fifo
+uart.FCR.[TF_CLR, RF_CLR] = 0; // restore tx/rx fifo
+uart.FCR.RX_TRG_LEVL = 3;      // set receive fifo irq trigger threshold to 14 elements
+uart.LCR = 0x1F // set 8-N-1 format, enable all types irq
 ```
+
 write operation:
 ```c
-uint32_t val = value_to_be_written;
-uart.SYS = val // write the sys register
-uart.IDL = val // write the idl register
-uart.IDH = val // write the idh register
+while(uart.LSR.FULL == 1); // wait a while until the tx fifo is no full
+uart.TRX = SEND_DATA_8_bit
+```
+
+read operation:
+```c
+uint32_t recv_val;
+while(uart.LSR.DR == 1) {  // if rx fifo is no empty
+    recv_val = uart.TRX
+};
 
 ```
 
