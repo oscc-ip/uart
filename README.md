@@ -12,12 +12,12 @@
     * 5, 6, 7 or 8 bits data word length
     * 0 or 1 stop bits
     * odd, even, one or zero parity
-* Independent send and receive fifo
+* Independent transmit and receive fifo
     * 16~64 data depth
     * empty or no-emtpy status flag
 * Three maskable interrupt
     * receive interrupt with programmable threshold
-    * send empty interrupt
+    * transmit empty interrupt
     * receive data parity err interrupt
 * Static synchronous design
 * Full synthesizable

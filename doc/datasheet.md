@@ -15,12 +15,12 @@ The `uart()` IP is a fully parameterised soft IP recording the SoC architecture 
     * 5, 6, 7 or 8 bits data word length
     * 0 or 1 stop bits
     * odd, even, one or zero parity
-* Independent send and receive fifo
+* Independent transmit and receive fifo
     * 16~64 data depth
     * empty or no-emtpy status flag
 * Three maskable interrupt
     * receive interrupt with programmable threshold
-    * send empty interrupt
+    * transmit empty interrupt
     * receive data parity err interrupt
 * Static synchronous design
 * Full synthesizable
@@ -40,7 +40,7 @@ The `uart()` IP is a fully parameterised soft IP recording the SoC architecture 
 |:----:|:-------:|:-----: | :---------: |
 | [LCR](#line-control-register) | 0x0 | 4 | line control register |
 | [DIV](#divide-reigster) | 0x4 | 4 | divide register |
-| [TRX](#send-receive-reigster) | 0x8 | 4 | send receive register |
+| [TRX](#transmit-receive-reigster) | 0x8 | 4 | transmit receive register |
 | [FCR](#fifo-control-reigster) | 0x10 | 4 | fifo control register |
 | [LSR](#line-state-reigster) | 0x14 | 4 | line state register |
 
@@ -82,9 +82,9 @@ reset value: `0x0000_0000`
     * `PEIE = 1'b0`: parity error interrupt enable
     * `PEIE = 1'b1`: parity error interrupt disable
 
-* TXIE: send interrupt enable
-    * `TXIE = 1'b0`: send interrupt enable
-    * `TXIE = 1'b1`: send interrupt disable
+* TXIE: transmit interrupt enable
+    * `TXIE = 1'b0`: transmit interrupt enable
+    * `TXIE = 1'b1`: transmit interrupt disable
 
 * RXIE: receive interrupt enable
     * `RXIE = 1'b0`: receive interrupt enable
@@ -100,7 +100,7 @@ reset value: `0x0000_0002`
 
 * DIV: clock divide value
 
-#### Send Receive Reigster
+#### Transmit Receive Reigster
 | bit | access  | description |
 |:---:|:-------:| :---------: |
 | `[31:8]` | none | reserved |
@@ -108,7 +108,7 @@ reset value: `0x0000_0002`
 
 reset value: `0x0000_0000`
 
-* TRX: send and receive shadow value
+* TRX: transmit and receive shadow value
 
 #### FIFO Control Reigster
 | bit | access  | description |
@@ -126,9 +126,9 @@ reset value: `0x0000_0000`
     * `RX_TRG_LEVL = 2'b10`: 8 receive fifo element threshold
     * `RX_TRG_LEVL = 2'b11`: 14 receive fifo element threshold
 
-* TF_CLR: send fifo clear
-    * `TF_CLR = 1'b0`: send fifo writable
-    * `TF_CLR = 1'b1`: send fifo clear
+* TF_CLR: transmit fifo clear
+    * `TF_CLR = 1'b0`: transmit fifo writable
+    * `TF_CLR = 1'b1`: transmit fifo clear
 
 * RF_CLR: receive fifo clear
     * `RF_CLR = 1'b0`: receive fifo readable
@@ -149,12 +149,30 @@ reset value: `0x0000_0000`
 reset value: `0x0000_0060`
 
 * TEMT: xxx
-* THRE: send fifo empty
+
+* THRE: transimtter holding register empty
+    * `THRE = 1'b0`: transmit fifo is empty
+    * `THRE = 1'b1`: otherwise
+
 * PE: parity error
-* DR: data read end
+    * `PE = 1'b0`: receive data with parity error
+    * `PE = 1'b1`: otherwise
+
+* DR: data ready
+    * `DR = 1'b0`: no data in fifo
+    * `DR = 1'b1`: otherwise
+
 * PEIP: parity error interrupt flag
-* TXIP: send interrupt flag
+    * `PEIP = 1'b0`: trigger parity error interrupt
+    * `PEIP = 1'b1`: otherwise
+
+* TXIP: transmit interrupt flag
+    * `TXIP = 1'b0`: trigger transmit interrupt
+    * `TXIP = 1'b1`: otherwise
+
 * RXIP: receive interrupt flag
+    * `RXIP = 1'b0`: trigger receive interrupt
+    * `RXIP = 1'b1`: otherwise
 
 ### Program Guide
 The software operation of `uart` is simple. These registers can be accessed by 4-byte aligned read and write. C-like pseudocode read operation:
