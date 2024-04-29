@@ -16,27 +16,27 @@
  * BITS:   | 31:9 | 8:7 | 6   | 5   | 4:3 | 2    | 1    | 0    |
  * FIELDS: | RES  | PS  | PEN | STB | WLS | PEIE | TXIE | RXIE |
  * PERMS:  | NONE | RW  | RW  | RW  | RW  | RW   | RW   | RW   |
- * -------------------------------------------------------------
+  * --------------------------------------------------------------------------
  * UART_DIV:
  * BITS:   | 31:16 | 15:0 |
  * FIELDS: | RES   | DIV  |
  * PERMS:  | NONE  | RW   |
- * -------------------------------------------------------------
+  * --------------------------------------------------------------------------
  * UART_TRX:
  * BITS:   | 31:8 | 7:0 || BITS:   | 31:8 | 7:0 |
  * FIELDS: | RES  | RX  || FIELDS: | RES  | TX  |
  * PERMS:  | NONE | RO  || PERMS:  | NONE | WO  |
-  * ------------------------------------------------------------
+  * --------------------------------------------------------------------------
  * UART_FCR:
  * BITS:   | 31:4 | 3:2         | 1      | 0      |
  * FIELDS: | RES  | RX_TRG_LEVL | TF_CLR | RF_CLR |
  * PERMS:  | NONE | WO          | WO     | WO     |
- * -------------------------------------------------------------
+ * ---------------------------------------------------------------------------
  * UART_LSR:
- * BITS:   | 31:7 | 6    | 5    | 4  | 3  | 2    | 1    | 0    |
- * FIELDS: | RES  | TEMT | THRE | PE | DR | PEIP | TXIP | RXIP |
- * PERMS:  | NONE | RO   | RO   | RO | RO | RO   | RO   | RO   |
- * -------------------------------------------------------------
+ * BITS:   | 31:9 | 8    | 7    | 6    | 5    | 4  | 3  | 2    | 1    | 0    |
+ * FIELDS: | RES  | FULL | EMPT | TEMT | THRE | PE | DR | PEIP | TXIP | RXIP |
+ * PERMS:  | NONE | RO   | RO   | RO   | RO   | RO | RO | RO   | RO   | RO   |
+ * ---------------------------------------------------------------------------
 */
 
 // verilog_format: off
@@ -56,10 +56,10 @@
 `define UART_DIV_WIDTH 16
 `define UART_TRX_WIDTH 8
 `define UART_FCR_WIDTH 4
-`define UART_LSR_WIDTH 7
+`define UART_LSR_WIDTH 9
 
 `define UART_DIV_MIN_VAL  {{(`UART_DIV_WIDTH-2){1'b0}}, 2'd2}
-`define UART_LSR_RESET_VAL 7'h60
+`define UART_LSR_RESET_VAL 9'h0E0
 // verilog_format: on
 
 interface uart_if ();

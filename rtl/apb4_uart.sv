@@ -25,7 +25,7 @@
 `include "uart_define.sv"
 
 module apb4_uart #(
-    parameter int FIFO_DEPTH     = 64,
+    parameter int FIFO_DEPTH     = 32,
     parameter int LOG_FIFO_DEPTH = $clog2(FIFO_DEPTH)
 ) (
     apb4_if.slave apb4,
@@ -118,6 +118,8 @@ module apb4_uart #(
     s_uart_lsr_d[4]   = s_rx_pop_data[8];
     s_uart_lsr_d[5]   = ~(|s_tx_elem);
     s_uart_lsr_d[6]   = s_tx_pop_ready & ~(|s_tx_elem);
+    s_uart_lsr_d[7]   = s_rx_empty;
+    s_uart_lsr_d[8]   = s_tx_full;
   end
   dffrc #(`UART_LSR_WIDTH, `UART_LSR_RESET_VAL) u_uart_lsr_dffrc (
       apb4.pclk,
