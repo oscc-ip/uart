@@ -40,7 +40,7 @@ task automatic UARTTest::test_reset_reg();
   this.rd_check(`UART_LCR_ADDR, "LCR REG", 32'b0 & {`UART_LCR_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
   this.rd_check(`UART_DIV_ADDR, "DIV REG", 32'd2 & {`UART_DIV_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
   this.rd_check(`UART_TRX_ADDR, "TRX REG", 32'b0 & {`UART_TRX_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
-  this.rd_check(`UART_LSR_ADDR, "LSR REG", 32'h60 & {`UART_LSR_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
+  this.rd_check(`UART_LSR_ADDR, "LSR REG", 32'h0e0 & {`UART_LSR_WIDTH{1'b1}}, Helper::EQUL, Helper::INFO);
   // verilog_format: on
 endtask
 
@@ -66,8 +66,13 @@ task automatic UARTTest::test_send();
 
   repeat (1000) @(posedge this.apb4.pclk);
   this.wr_val = 32'h41;
-  for (int i = 0; i < 26; i++) begin
+  for (int i = 0; i < 48; i++) begin
+    do begin
+      this.read(`UART_LSR_ADDR);
+    end while (super.rd_data[8] == 1'b1);
+
     this.write(`UART_TRX_ADDR, (this.wr_val + i) & {`UART_TRX_WIDTH{1'b1}});
+    // $display("%c", this.wr_val + i);
     // repeat (5000 * 12) @(posedge this.apb4.pclk);
   end
 
