@@ -195,7 +195,7 @@ uart.DIV = BAUD_DIV_16_bit     // set baud -> BAUD_DIV_16_bit = 100 x 10^6 / BAU
 uart.FCR.[TF_CLR, RF_CLR] = 1; // clear tx/rx fifo
 uart.FCR.[TF_CLR, RF_CLR] = 0; // restore tx/rx fifo
 uart.FCR.RX_TRG_LEVL = 3;      // set receive fifo irq trigger threshold to 14 elements
-uart.LCR = 0x1F // set 8-N-1 format, enable all types irq
+uart.LCR = 0x1F                // set 8-N-1 format, enable all types irq
 ```
 
 write operation:
