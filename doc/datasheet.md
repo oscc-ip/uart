@@ -65,8 +65,8 @@ reset value: `0x0000_0000`
     * `PS = 2'b11`: one parity
 
 * PEN: parity bit enable
-    * `PEN = 1'b0`: parity bit enable
-    * `PEN = 1'b1`: parity bit disable
+    * `PEN = 1'b0`: parity bit disable
+    * `PEN = 1'b1`: otherwise
 
 * STB: stop bit length
     * `STB = 1'b0`: 1 stop bit
@@ -79,16 +79,16 @@ reset value: `0x0000_0000`
     * `WLS = 2'b11`: 8-bit data word length
 
 * PEIE: parity error interrupt enable
-    * `PEIE = 1'b0`: parity error interrupt enable
-    * `PEIE = 1'b1`: parity error interrupt disable
+    * `PEIE = 1'b0`: parity error interrupt disable
+    * `PEIE = 1'b1`: otherwise
 
 * TXIE: transmit interrupt enable
-    * `TXIE = 1'b0`: transmit interrupt enable
-    * `TXIE = 1'b1`: transmit interrupt disable
+    * `TXIE = 1'b0`: transmit interrupt disable
+    * `TXIE = 1'b1`: otherwise
 
 * RXIE: receive interrupt enable
-    * `RXIE = 1'b0`: receive interrupt enable
-    * `RXIE = 1'b1`: receive interrupt disable
+    * `RXIE = 1'b0`: receive interrupt disable
+    * `RXIE = 1'b1`: otherwise
 
 #### Divide Reigster
 | bit | access  | description |
