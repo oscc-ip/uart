@@ -59,10 +59,11 @@ module uart_rx (
   assign busy_o = (s_fsm_q != IDLE);
   always_comb begin
     unique case (cfg_bits_i)
-      2'b00: s_target_bits = 3'd4;
-      2'b01: s_target_bits = 3'd5;
-      2'b10: s_target_bits = 3'd6;
-      2'b11: s_target_bits = 3'd7;
+      2'b00:   s_target_bits = 3'd4;
+      2'b01:   s_target_bits = 3'd5;
+      2'b10:   s_target_bits = 3'd6;
+      2'b11:   s_target_bits = 3'd7;
+      default: s_target_bits = 3'd4;
     endcase
   end
 

@@ -26,6 +26,7 @@ SRC_FILE += ../tb/apb4_uart_tb.sv
 SIM_INC ?=
 SIM_INC += +incdir+../rtl/
 SIM_INC += +incdir+../../common/rtl/
+SIM_INC += +incdir+../../common/rtl/tech
 SIM_INC += +incdir+../../common/rtl/verif
 SIM_INC += +incdir+../../common/rtl/interface
 
