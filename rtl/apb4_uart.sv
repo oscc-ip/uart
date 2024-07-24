@@ -96,6 +96,7 @@ module apb4_uart #(
 
   always_comb begin
     s_tx_push_valid = 1'b0;
+    s_tx_push_data  = '0;
     if (s_apb4_wr_hdshk && s_apb4_addr == `UART_TRX) begin
       s_tx_push_valid = 1'b1;
       s_tx_push_data  = apb4.pwdata[`UART_TRX_WIDTH-1:0];
