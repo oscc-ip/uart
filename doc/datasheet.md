@@ -212,6 +212,7 @@ while(uart.LSR.DR == 1) {  // if rx fifo is no empty
 };
 
 ```
+complete driver and test codes in [driver](../driver/) dir.
 
 ### Resoureces
 ### References
