@@ -62,12 +62,4 @@
 `define UART_LSR_RESET_VAL 9'h0E0
 // verilog_format: on
 
-interface uart_if ();
-  logic uart_rx_i;
-  logic uart_tx_o;
-  logic irq_o;
-
-  modport dut(input uart_rx_i, output uart_tx_o, output irq_o);
-  modport tb(output uart_rx_i, input uart_tx_o, input irq_o);
-endinterface
 `endif
