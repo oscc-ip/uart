@@ -8,11 +8,7 @@
 // MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 // See the Mulan PSL v2 for more details.
 
-`ifndef INC_UART_TEST_SV
-`define INC_UART_TEST_SV
-
-`include "apb4_master.sv"
-`include "uart_define.sv"
+`include "uart_define.svh"
 
 class UARTTest extends APB4Master;
   string                 name;
@@ -105,4 +101,3 @@ endtask
 task automatic UARTTest::test_irq(input bit [31:0] run_times = 10);
   super.test_irq();
 endtask
-`endif

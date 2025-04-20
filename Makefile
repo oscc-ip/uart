@@ -1,8 +1,9 @@
-NOVAS        := /eda/tools/snps/verdi/R-2020.12/share/PLI/VCS/LINUX64
+NOVAS        := /nfs/tools/synopsys/verdi/V-2023.12-SP1-1/share/PLI/VCS/LINUX64
 EXTRA        := -P ${NOVAS}/novas.tab ${NOVAS}/pli.a
 
-VERDI_TOOL   := verdi
-SIM_TOOL     := vcs
+SIM_TOOL     := bsub -Is vcs
+SIM_BINY     := bsub -Is ./simv
+VERDI_TOOL   := bsub -Is verdi
 SIM_OPTIONS  := -full64 -debug_acc+all  +v2k -sverilog -timescale=1ns/10ps \
                 ${EXTRA} \
                 +error+500\
@@ -10,10 +11,16 @@ SIM_OPTIONS  := -full64 -debug_acc+all  +v2k -sverilog -timescale=1ns/10ps \
                 -work DEFAULT\
                 +vcs+flush+all \
                 +lint=TFIPC-L \
-                +define+S50 \
+                +define+SV_ASSRT_DISABLE \
                 -kdb \
 
 SRC_FILE ?=
+SRC_FILE += ../../common/rtl/utils/register.sv
+SRC_FILE += ../../common/rtl/utils/fifo.sv
+SRC_FILE += ../../common/rtl/interface/apb4_if.sv
+SRC_FILE += ../../common/rtl/verif/helper.sv
+SRC_FILE += ../../common/rtl/verif/test_base.sv
+SRC_FILE += ../../common/rtl/verif/apb4_master.sv
 SRC_FILE += ../rtl/uart_tx.sv
 SRC_FILE += ../rtl/uart_rx.sv
 SRC_FILE += ../rtl/uart_irq.sv
@@ -26,8 +33,6 @@ SRC_FILE += ../tb/apb4_uart_tb.sv
 SIM_INC ?=
 SIM_INC += +incdir+../rtl/
 SIM_INC += +incdir+../../common/rtl/
-SIM_INC += +incdir+../../common/rtl/tech
-SIM_INC += +incdir+../../common/rtl/verif
 SIM_INC += +incdir+../../common/rtl/interface
 
 SIM_APP  ?= apb4_uart
@@ -43,7 +48,7 @@ comp:
 	cd build && (${SIM_TOOL} ${SIM_OPTIONS} -top $(SIM_TOP) -l compile.log $(SRC_FILE) $(SIM_INC))
 
 run: comp
-	cd build && ./simv -l run.log ${RUN_ARGS}
+	cd build && $(SIM_BINY) -l run.log ${RUN_ARGS}
 
 wave:
 	${VERDI_TOOL} -ssf build/$(SIM_TOP).fsdb &

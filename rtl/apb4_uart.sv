@@ -20,9 +20,7 @@
 // MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 // See the Mulan PSL v2 for more details.
 
-`include "register.sv"
-`include "fifo.sv"
-`include "uart_define.sv"
+`include "uart_define.svh"
 
 module apb4_uart #(
     parameter int FIFO_DEPTH     = 32,
